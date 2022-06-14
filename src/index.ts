@@ -1,4 +1,4 @@
-import { PointInTime, TM_DurableObject, TM_class, TM_Env, TaskManager, taskId } from './types'
+import { PointInTime, TM_DurableObject, TM_DO_class, TM_Env, Task, TaskManager, taskId } from './types'
 import { TaskContext } from './context'
 
 export class TaskManagerImpl implements TaskManager {
@@ -21,24 +21,47 @@ export class TaskManagerImpl implements TaskManager {
   }
 }
 
+function proxyStorage(storage: DurableObjectStorage, context: TaskContext): DurableObjectStorage {
+  console.log({ storage })
+  return new Proxy(storage, {
+    get: (getTarget, prop, receiver) => {
+      if (prop === 'deleteAlarm') {
+        return new Proxy(getTarget.deleteAlarm, {
+          apply: (_target, _thisArg, _argArray): Promise<void> => {
+            return context.deleteAlarm()
+          },
+        })
+      } else if (prop === 'getAlarm') {
+        return new Proxy(getTarget.getAlarm, {
+          apply: (_target, _thisArg, _argArray): Promise<number | null> => {
+            return context.getAlarm()
+          },
+        })
+      } else if (prop === 'setAlarm') {
+        return new Proxy(getTarget.setAlarm, {
+          apply: (_target, _thisArg, [time]): Promise<void> => {
+            return context.setAlarm(time as PointInTime)
+          },
+        })
+      } else {
+        return Reflect.get(getTarget, prop, receiver)
+      }
+    },
+  })
+}
+
 function proxyState(state: DurableObjectState, context: TaskContext): DurableObjectState {
-  const storage = state.storage
-  storage.deleteAlarm = new Proxy(storage.deleteAlarm, {
-    apply: (_target, _thisArg, _argArray): Promise<void> => {
-      return context.deleteAlarm()
+  console.log({ state })
+  return new Proxy(state, {
+    get: (target, prop, receiver) => {
+      if (prop === 'storage') {
+        const storage = Reflect.get(target, prop, receiver)
+        return proxyStorage(storage, context)
+      } else {
+        return Reflect.get(target, prop, receiver)
+      }
     },
   })
-  storage.getAlarm = new Proxy(storage.getAlarm, {
-    apply: (_target, _thisArg, _argArray): Promise<number | null> => {
-      return context.getAlarm()
-    },
-  })
-  storage.setAlarm = new Proxy(storage.setAlarm, {
-    apply: (_target, _thisArg, [time]): Promise<void> => {
-      return context.setAlarm(time as PointInTime)
-    },
-  })
-  return state
 }
 
 function proxyDO(targetDO: TM_DurableObject, context: TaskContext): TM_DurableObject {
@@ -50,16 +73,17 @@ function proxyDO(targetDO: TM_DurableObject, context: TaskContext): TM_DurableOb
   return targetDO
 }
 
-export function withTaskManager(do_class: TM_class): TM_class {
+export function withTaskManager<T extends TM_Env>(do_class: TM_DO_class<T>): TM_DO_class<T> {
   return new Proxy(do_class, {
     construct: (target, [state, env, ...rest]) => {
       const context = new TaskContext(state)
       const proxiedState = proxyState(state, context)
-      const tm_env = env as TM_Env
-      tm_env.TASK_MANAGER = new TaskManagerImpl(context)
-      const obj = new target(proxiedState, tm_env, ...rest)
+      env.TASK_MANAGER = new TaskManagerImpl(context)
+      const obj = new target(proxiedState, env, ...rest)
       const proxiedDO = proxyDO(obj, context)
       return proxiedDO
     },
   })
 }
+
+export type { Task, TaskManager, TM_DurableObject }
