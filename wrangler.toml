@@ -1,3 +1,13 @@
-name = "do-taskmanager"
+name = "do-taskmanager2"
 main = "worker/index.ts"
 compatibility_date = "2022-06-07"
+compatibility_flags = ["durable_object_alarms"]
+
+[durable_objects]
+bindings = [
+  { name = "TEST_DO", class_name = "Test_DO" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["Test_DO"]
