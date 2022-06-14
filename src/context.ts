@@ -54,7 +54,6 @@ export class TaskContext {
   }
 
   async setAlarm(time: PointInTime): Promise<void> {
-    const epoch = getTime(time)
     await this.scheduleTask(time, { id: 'alarm', type: 'ALARM', attempt: 0, context: undefined })
   }
 
