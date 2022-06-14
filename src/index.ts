@@ -44,7 +44,8 @@ function proxyStorage(storage: DurableObjectStorage, context: TaskContext): Dura
           },
         })
       } else {
-        return Reflect.get(getTarget, prop, receiver)
+        //@ts-ignore
+        return storage[prop].bind(storage) //Reflect.get(getTarget, prop, receiver)
       }
     },
   })
@@ -55,10 +56,15 @@ function proxyState(state: DurableObjectState, context: TaskContext): DurableObj
   return new Proxy(state, {
     get: (target, prop, receiver) => {
       if (prop === 'storage') {
-        const storage = Reflect.get(target, prop, receiver)
-        return proxyStorage(storage, context)
+        // const storage = Reflect.get(target, prop, receiver)
+        return proxyStorage(state.storage, context)
       } else {
-        return Reflect.get(target, prop, receiver)
+        //@ts-ignore
+        const value = state[prop]
+        if (typeof value === 'function') {
+          value.bind(state)
+        }
+        return value //Reflect.get(target, prop, receiver)
       }
     },
   })
