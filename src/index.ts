@@ -19,12 +19,15 @@ export class TaskManagerImpl implements TaskManager {
   async cancelTask(id: taskId): Promise<void> {
     return this.taskContext.cancelTask(id)
   }
+
+  async getActualAlarm(): Promise<number | null> {
+    return this.taskContext.getActualAlarm()
+  }
 }
 
 function proxyStorage(storage: DurableObjectStorage, context: TaskContext): DurableObjectStorage {
-  console.log({ storage })
   return new Proxy(storage, {
-    get: (getTarget, prop, receiver) => {
+    get: (getTarget, prop, _receiver) => {
       if (prop === 'deleteAlarm') {
         return new Proxy(getTarget.deleteAlarm, {
           apply: (_target, _thisArg, _argArray): Promise<void> => {
@@ -45,26 +48,21 @@ function proxyStorage(storage: DurableObjectStorage, context: TaskContext): Dura
         })
       } else {
         //@ts-ignore
-        return storage[prop].bind(storage) //Reflect.get(getTarget, prop, receiver)
+        return storage[prop].bind(storage)
+        // return reflectGet(getTarget, prop, storage)
       }
     },
   })
 }
 
 function proxyState(state: DurableObjectState, context: TaskContext): DurableObjectState {
-  console.log({ state })
   return new Proxy(state, {
-    get: (target, prop, receiver) => {
+    get: (target, prop, _receiver) => {
       if (prop === 'storage') {
-        // const storage = Reflect.get(target, prop, receiver)
         return proxyStorage(state.storage, context)
       } else {
         //@ts-ignore
-        const value = state[prop]
-        if (typeof value === 'function') {
-          value.bind(state)
-        }
-        return value //Reflect.get(target, prop, receiver)
+        return state[prop]
       }
     },
   })
@@ -83,8 +81,8 @@ export function withTaskManager<T extends TM_Env>(do_class: TM_DO_class<T>): TM_
   return new Proxy(do_class, {
     construct: (target, [state, env, ...rest]) => {
       const context = new TaskContext(state)
-      const proxiedState = proxyState(state, context)
       env.TASK_MANAGER = new TaskManagerImpl(context)
+      const proxiedState = proxyState(state, context)
       const obj = new target(proxiedState, env, ...rest)
       const proxiedDO = proxyDO(obj, context)
       return proxiedDO

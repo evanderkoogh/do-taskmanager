@@ -49,4 +49,5 @@ export interface TaskManager {
   scheduleTaskIn(ms: number, context: any): Promise<taskId>
   scheduleTaskEvery(ms: number, context: any): Promise<taskId>
   cancelTask(taskId: taskId): Promise<void>
+  getActualAlarm(): Promise<number | null>
 }

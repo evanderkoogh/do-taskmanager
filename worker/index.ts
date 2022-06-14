@@ -11,7 +11,6 @@ export default {
     if (pathname === '/favicon.ico') {
       return new Response('Not found.', { status: 404 })
     } else {
-      console.log(JSON.stringify(env))
       const id = env.TEST_DO.idFromName('test')
       const stub = env.TEST_DO.get(id)
       return stub.fetch(request)
@@ -34,9 +33,11 @@ class TestDO implements TM_DurableObject {
   async processFetch(request: Request): Promise<Response> {
     const pathname = new URL(request.url).pathname
     if (pathname === '/status') {
+      const alarm = this.env.TASK_MANAGER.getActualAlarm()
       const list = await this.storage.list()
-      const arr = [...list.entries()]
-      return new Response(JSON.stringify(arr, null, 2), { headers: { 'content-type': 'application/json' } })
+      const db = [...list.entries()]
+      const obj = { alarm, db }
+      return new Response(JSON.stringify(obj, null, 2), { headers: { 'content-type': 'application/json' } })
     } else if (pathname === '/alarm') {
       const time = Date.now() + 1000 * 60
       this.storage.setAlarm(time)

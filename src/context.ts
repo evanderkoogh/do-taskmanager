@@ -85,6 +85,10 @@ export class TaskContext {
     }
   }
 
+  async getActualAlarm(): Promise<number | null> {
+    return await this.storage.getAlarm()
+  }
+
   async alarm(targetDO: TM_DurableObject): Promise<void> {
     const alarms = await this.storage.list<string>({
       prefix: '$$_tasks::alarm::',
