@@ -46,10 +46,17 @@ function proxyStorage(storage: DurableObjectStorage, context: TaskContext): Dura
             return context.setAlarm(time as PointInTime)
           },
         })
+      } else if (prop === 'deleteAlarm') {
+        return new Proxy(getTarget.setAlarm, {
+          apply: async (_target, _thisArg, argArray): Promise<void> => {
+            await context.deleteAlarm()
+            const deleteAll = storage[prop].bind(storage)
+            return deleteAll(...argArray)
+          },
+        })
       } else {
         //@ts-ignore
         return storage[prop].bind(storage)
-        // return reflectGet(getTarget, prop, storage)
       }
     },
   })
@@ -57,7 +64,7 @@ function proxyStorage(storage: DurableObjectStorage, context: TaskContext): Dura
 
 function proxyState(state: DurableObjectState, context: TaskContext): DurableObjectState {
   return new Proxy(state, {
-    get: (target, prop, _receiver) => {
+    get: (_target, prop, _receiver) => {
       if (prop === 'storage') {
         return proxyStorage(state.storage, context)
       } else {
@@ -69,25 +76,40 @@ function proxyState(state: DurableObjectState, context: TaskContext): DurableObj
 }
 
 function proxyDO(targetDO: TM_DurableObject, context: TaskContext): TM_DurableObject {
-  targetDO.alarm = new Proxy(targetDO.alarm, {
-    apply: (_target, thisArg, _argArray): Promise<void> => {
-      return context.alarm(thisArg)
+  const proxy = new Proxy(targetDO, {
+    get: (_target, prop, _receiver) => {
+      if (prop === 'alarm') {
+        return async () => {
+          await context.alarm(targetDO)
+        }
+      } else {
+        //@ts-ignore
+        const value = targetDO[prop]
+        if (typeof value === 'function') {
+          value.bind(targetDO)
+        }
+        return value
+      }
     },
   })
-  return targetDO
+  return proxy
 }
 
 export function withTaskManager<T extends TM_Env>(do_class: TM_DO_class<T>): TM_DO_class<T> {
-  return new Proxy(do_class, {
+  const proxy = new Proxy(do_class, {
     construct: (target, [state, env, ...rest]) => {
       const context = new TaskContext(state)
       env.TASK_MANAGER = new TaskManagerImpl(context)
       const proxiedState = proxyState(state, context)
       const obj = new target(proxiedState, env, ...rest)
+      console.log({ obj })
       const proxiedDO = proxyDO(obj, context)
+      console.log({ proxiedDO })
+      console.log(obj == proxiedDO)
       return proxiedDO
     },
   })
+  return proxy
 }
 
 export type { Task, TaskManager, TM_DurableObject }

@@ -11,7 +11,7 @@ export default {
     if (pathname === '/favicon.ico') {
       return new Response('Not found.', { status: 404 })
     } else {
-      const id = env.TEST_DO.idFromName('test')
+      const id = env.TEST_DO.idFromName('test2')
       const stub = env.TEST_DO.get(id)
       return stub.fetch(request)
     }
@@ -24,19 +24,21 @@ class TestDO implements TM_DurableObject {
     this.storage = state.storage
   }
   async processTask(task: Task): Promise<void> {
+    console.log(`In DO processTask: ${task}`)
     this.storage.put(`processed::receivedAt::${Date.now()}::${task.id}}`, task)
   }
   async alarm(): Promise<void> {
+    console.log('In DO alarm!')
     this.storage.put(`alarm::receivedAt::${Date.now()}`, 'alarm!')
   }
 
   async processFetch(request: Request): Promise<Response> {
     const pathname = new URL(request.url).pathname
     if (pathname === '/status') {
-      const alarm = this.env.TASK_MANAGER.getActualAlarm()
+      const alarm = await this.env.TASK_MANAGER.getActualAlarm()
       const list = await this.storage.list()
       const db = [...list.entries()]
-      const obj = { alarm, db }
+      const obj = { currentTime: Date.now(), alarm, db }
       return new Response(JSON.stringify(obj, null, 2), { headers: { 'content-type': 'application/json' } })
     } else if (pathname === '/alarm') {
       const time = Date.now() + 1000 * 60
@@ -50,7 +52,7 @@ class TestDO implements TM_DurableObject {
       this.env.TASK_MANAGER.scheduleTaskAt(time2, 'schedule-time2')
       const taskId3 = await this.env.TASK_MANAGER.scheduleTaskAt(time3, 'schedule-time3')
       this.env.TASK_MANAGER.scheduleTaskEvery(60000, 'recurring')
-      this.env.TASK_MANAGER.scheduleTaskIn(60000, 'schedule-in')
+      this.env.TASK_MANAGER.scheduleTaskIn(75000, 'schedule-in')
       this.env.TASK_MANAGER.cancelTask(taskId3)
       return new Response('Scheduled!')
     } else if (pathname === '/delete') {

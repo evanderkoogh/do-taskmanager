@@ -6,23 +6,21 @@ function getTime(time: PointInTime): number {
 
 export class TaskContext {
   private readonly storage: DurableObjectStorage
-  private alarmTime: number | null | undefined
   constructor(state: DurableObjectState) {
     this.storage = state.storage
   }
 
-  private async setDOAlarm(time: number) {
-    if (time === 0) time = 1 //Alarms don't work when set to 0.
-    if (this.alarmTime === undefined) {
-      this.alarmTime = await this.storage.getAlarm()
-    }
-    if (this.alarmTime === null || time < this.alarmTime) {
+  private async setNextAlarm() {
+    const nextAlarmKeyMap = await this.storage.list<taskId>({ prefix: '$$_tasks::alarm::', limit: 1 })
+    const nextAlarmKeyArray = [...nextAlarmKeyMap.keys()]
+    if (nextAlarmKeyArray.length > 0) {
+      const time = parseInt(nextAlarmKeyArray[0].replace('$$_tasks::alarm::', ''))
       await this.storage.setAlarm(time)
-      this.alarmTime = time
     }
   }
 
   private async scheduleTask(time: PointInTime, task: AllTasks, setAlarm: boolean = true): Promise<taskId> {
+    console.log(`scheduling task: ${task.id} for ${new Date(time).toISOString()}`)
     const epoch = getTime(time)
     const promises = [
       this.storage.put(`$$_tasks::id::${task.id}`, task),
@@ -30,7 +28,7 @@ export class TaskContext {
     ]
     await Promise.all(promises)
     if (setAlarm) {
-      await this.setDOAlarm(epoch)
+      await this.setNextAlarm()
     }
     return task.id
   }
@@ -67,6 +65,7 @@ export class TaskContext {
   }
 
   private async processTask(targetDO: TM_DurableObject, task: AllTasks): Promise<ProcessingError | void> {
+    console.log(`Processing task: ${task}`)
     if (task.type === 'ALARM') {
       return this.processAlarm(targetDO, task)
     }
@@ -90,6 +89,7 @@ export class TaskContext {
   }
 
   async alarm(targetDO: TM_DurableObject): Promise<void> {
+    console.log('Alarm is being run on Context!')
     const alarms = await this.storage.list<string>({
       prefix: '$$_tasks::alarm::',
       end: `$$_tasks::alarm::${Date.now() + 50}`,
@@ -106,7 +106,7 @@ export class TaskContext {
         const error = await this.processTask(targetDO, task)
         if (error) {
           //retry in a minute
-          task.previousError = error
+          task.previousError = error.error
           await this.scheduleTask(Date.now() + 60 * 1000, task, false)
         } else if (task.type === 'RECURRING') {
           task.attempt = 0
@@ -116,11 +116,6 @@ export class TaskContext {
       }
       await this.storage.delete(key)
     }
-    const nextAlarmKeyMap = await this.storage.list<taskId>({ prefix: '$$_tasks::alarm::', limit: 1 })
-    const nextAlarmKeyArray = [...nextAlarmKeyMap.keys()]
-    if (nextAlarmKeyArray.length > 0) {
-      const time = parseInt(nextAlarmKeyArray[0].replace('$$_tasks::alarm::', ''))
-      await this.setDOAlarm(time)
-    }
+    await this.setNextAlarm()
   }
 }
