@@ -38,14 +38,12 @@ function proxyStorage(storage: DurableObjectStorage, context: TaskContext): Dura
       } else if (prop === 'getAlarm') {
         return new Proxy(getTarget.getAlarm, {
           apply: (_target, _thisArg, _argArray): Promise<number | null> => {
-            console.log(`Forwarding to context.setAlarm()`)
             return context.getAlarm()
           },
         })
       } else if (prop === 'setAlarm') {
         return new Proxy(getTarget.setAlarm, {
           apply: (_target, _thisArg, [time]): Promise<void> => {
-            console.log(`Forwarding to context.getAlarm()`)
             return context.setAlarm(time as PointInTime)
           },
         })
@@ -81,11 +79,8 @@ function proxyState(state: DurableObjectState, context: TaskContext): DurableObj
 function proxyDO(targetDO: TM_DurableObject, context: TaskContext): TM_DurableObject {
   const proxy = new Proxy(targetDO, {
     get: (_target, prop, _receiver) => {
-      console.log(`Getting property "${String(prop)}" from the DO`)
       if (prop === 'alarm') {
-        console.log('In the proxy DO alarm getter')
         return async () => {
-          console.log('Calling the context alarm')
           await context.alarm(targetDO)
         }
       } else {

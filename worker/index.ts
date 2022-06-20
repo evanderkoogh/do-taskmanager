@@ -24,11 +24,9 @@ class TestDO implements TM_DurableObject {
     this.storage = state.storage
   }
   async processTask(task: Task): Promise<void> {
-    console.log(`In DO processTask: ${task}`)
     this.storage.put(`processed::receivedAt::${Date.now()}::${task.id}}`, task)
   }
   async alarm(): Promise<void> {
-    console.log('In DO alarm!')
     this.storage.put(`alarm::receivedAt::${Date.now()}`, 'alarm!')
   }
 

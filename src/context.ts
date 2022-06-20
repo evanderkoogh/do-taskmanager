@@ -11,18 +11,15 @@ export class TaskContext {
   }
 
   private async setNextAlarm() {
-    console.log('Setting next alarm')
     const nextAlarmKeyMap = await this.storage.list<taskId>({ prefix: '$$_tasks::alarm::', limit: 1 })
     const nextAlarmKeyArray = [...nextAlarmKeyMap.keys()]
     if (nextAlarmKeyArray.length > 0) {
       const time = parseInt(nextAlarmKeyArray[0].replace('$$_tasks::alarm::', ''))
-      console.log(`Found an actual alarm time: ${time}`)
       await this.storage.setAlarm(time)
     }
   }
 
   private async scheduleTask(time: PointInTime, task: AllTasks, setAlarm: boolean = true): Promise<taskId> {
-    console.log(`scheduling task: ${task.id} for ${new Date(time).toISOString()}`)
     const epoch = getTime(time)
     task.scheduledAt = epoch
     const promises = [
@@ -68,7 +65,6 @@ export class TaskContext {
   }
 
   private async processTask(targetDO: TM_DurableObject, task: AllTasks): Promise<ProcessingError | void> {
-    console.log(`Processing task: ${task}`)
     if (task.type === 'ALARM') {
       return this.processAlarm(targetDO, task)
     }
@@ -82,9 +78,7 @@ export class TaskContext {
   private async processAlarm(targetDO: TM_DurableObject, alarm: AlarmTask): Promise<ProcessingError | void> {
     console.log('Processing Alarm')
     try {
-      console.log(alarm.scheduledAt)
       if (alarm.scheduledAt && alarm.scheduledAt <= Date.now()) {
-        console.log('executing the DO alarm')
         return await targetDO.alarm()
       }
     } catch (error) {
@@ -93,12 +87,10 @@ export class TaskContext {
   }
 
   async getActualAlarm(): Promise<number | null> {
-    console.log('Context.GetActualAlarm')
     return await this.storage.getAlarm()
   }
 
   async alarm(targetDO: TM_DurableObject): Promise<void> {
-    console.log('Alarm is being run on Context!')
     const alarms = await this.storage.list<string>({
       prefix: '$$_tasks::alarm::',
       end: `$$_tasks::alarm::${Date.now() + 50}`,
