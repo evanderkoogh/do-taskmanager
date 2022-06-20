@@ -11,7 +11,7 @@ export default {
     if (pathname === '/favicon.ico') {
       return new Response('Not found.', { status: 404 })
     } else {
-      const id = env.TEST_DO.idFromName('test2')
+      const id = env.TEST_DO.idFromName('test4')
       const stub = env.TEST_DO.get(id)
       return stub.fetch(request)
     }
@@ -51,8 +51,8 @@ class TestDO implements TM_DurableObject {
       this.env.TASK_MANAGER.scheduleTaskAt(time1, 'schedule-time1')
       this.env.TASK_MANAGER.scheduleTaskAt(time2, 'schedule-time2')
       const taskId3 = await this.env.TASK_MANAGER.scheduleTaskAt(time3, 'schedule-time3')
-      this.env.TASK_MANAGER.scheduleTaskEvery(60000, 'recurring')
-      this.env.TASK_MANAGER.scheduleTaskIn(75000, 'schedule-in')
+      this.env.TASK_MANAGER.scheduleTaskEvery(60, 'recurring')
+      this.env.TASK_MANAGER.scheduleTaskIn(75, 'schedule-in')
       this.env.TASK_MANAGER.cancelTask(taskId3)
       return new Response('Scheduled!')
     } else if (pathname === '/delete') {

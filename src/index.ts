@@ -21,6 +21,7 @@ export class TaskManagerImpl implements TaskManager {
   }
 
   async getActualAlarm(): Promise<number | null> {
+    console.log(`In TaskManager getActualAlarm`)
     return this.taskContext.getActualAlarm()
   }
 }
@@ -37,12 +38,14 @@ function proxyStorage(storage: DurableObjectStorage, context: TaskContext): Dura
       } else if (prop === 'getAlarm') {
         return new Proxy(getTarget.getAlarm, {
           apply: (_target, _thisArg, _argArray): Promise<number | null> => {
+            console.log(`Forwarding to context.setAlarm()`)
             return context.getAlarm()
           },
         })
       } else if (prop === 'setAlarm') {
         return new Proxy(getTarget.setAlarm, {
           apply: (_target, _thisArg, [time]): Promise<void> => {
+            console.log(`Forwarding to context.getAlarm()`)
             return context.setAlarm(time as PointInTime)
           },
         })
@@ -78,8 +81,11 @@ function proxyState(state: DurableObjectState, context: TaskContext): DurableObj
 function proxyDO(targetDO: TM_DurableObject, context: TaskContext): TM_DurableObject {
   const proxy = new Proxy(targetDO, {
     get: (_target, prop, _receiver) => {
+      console.log(`Getting property "${String(prop)}" from the DO`)
       if (prop === 'alarm') {
+        console.log('In the proxy DO alarm getter')
         return async () => {
+          console.log('Calling the context alarm')
           await context.alarm(targetDO)
         }
       } else {
@@ -102,10 +108,7 @@ export function withTaskManager<T extends TM_Env>(do_class: TM_DO_class<T>): TM_
       env.TASK_MANAGER = new TaskManagerImpl(context)
       const proxiedState = proxyState(state, context)
       const obj = new target(proxiedState, env, ...rest)
-      console.log({ obj })
       const proxiedDO = proxyDO(obj, context)
-      console.log({ proxiedDO })
-      console.log(obj == proxiedDO)
       return proxiedDO
     },
   })

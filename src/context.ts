@@ -11,10 +11,12 @@ export class TaskContext {
   }
 
   private async setNextAlarm() {
+    console.log('Setting next alarm')
     const nextAlarmKeyMap = await this.storage.list<taskId>({ prefix: '$$_tasks::alarm::', limit: 1 })
     const nextAlarmKeyArray = [...nextAlarmKeyMap.keys()]
     if (nextAlarmKeyArray.length > 0) {
       const time = parseInt(nextAlarmKeyArray[0].replace('$$_tasks::alarm::', ''))
+      console.log(`Found an actual alarm time: ${time}`)
       await this.storage.setAlarm(time)
     }
   }
@@ -22,9 +24,10 @@ export class TaskContext {
   private async scheduleTask(time: PointInTime, task: AllTasks, setAlarm: boolean = true): Promise<taskId> {
     console.log(`scheduling task: ${task.id} for ${new Date(time).toISOString()}`)
     const epoch = getTime(time)
+    task.scheduledAt = epoch
     const promises = [
       this.storage.put(`$$_tasks::id::${task.id}`, task),
-      this.storage.put(`$$_tasks::alarm::${epoch}`, task.id),
+      this.storage.put(`$$_tasks::alarm::${epoch}::id::${task.id}`, task.id),
     ]
     await Promise.all(promises)
     if (setAlarm) {
@@ -77,14 +80,20 @@ export class TaskContext {
   }
 
   private async processAlarm(targetDO: TM_DurableObject, alarm: AlarmTask): Promise<ProcessingError | void> {
+    console.log('Processing Alarm')
     try {
-      return await targetDO.alarm()
+      console.log(alarm.scheduledAt)
+      if (alarm.scheduledAt && alarm.scheduledAt <= Date.now()) {
+        console.log('executing the DO alarm')
+        return await targetDO.alarm()
+      }
     } catch (error) {
       return { error, task: alarm }
     }
   }
 
   async getActualAlarm(): Promise<number | null> {
+    console.log('Context.GetActualAlarm')
     return await this.storage.getAlarm()
   }
 
@@ -94,13 +103,14 @@ export class TaskContext {
       prefix: '$$_tasks::alarm::',
       end: `$$_tasks::alarm::${Date.now() + 50}`,
     })
-    const getTaskPromises = [...alarms.entries()].map(async ([key, id]) => {
-      const task = await this.storage.get<AllTasks>(`$$_tasks::id::${id}`)
-      return { key, task }
+    const getTaskPromises = [...alarms.entries()].map(async ([alarm_key, id]) => {
+      const task_key = `$$_tasks::id::${id}`
+      const task = await this.storage.get<AllTasks>(task_key)
+      return { alarm_key, task_key, task }
     })
     const taskResults = await Promise.all(getTaskPromises)
     for (const entry of taskResults) {
-      const { key, task } = entry
+      const { alarm_key, task_key, task } = entry
       if (task) {
         task.attempt++
         const error = await this.processTask(targetDO, task)
@@ -114,7 +124,8 @@ export class TaskContext {
           await this.scheduleTask(Date.now() + task.interval * 1000, task, false)
         }
       }
-      await this.storage.delete(key)
+      this.storage.delete(task_key)
+      await this.storage.delete(alarm_key)
     }
     await this.setNextAlarm()
   }
