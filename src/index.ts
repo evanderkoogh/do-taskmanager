@@ -19,11 +19,6 @@ export class TaskManagerImpl implements TaskManager {
   async cancelTask(id: taskId): Promise<void> {
     return this.taskContext.cancelTask(id)
   }
-
-  async getActualAlarm(): Promise<number | null> {
-    console.log(`In TaskManager getActualAlarm`)
-    return this.taskContext.getActualAlarm()
-  }
 }
 
 function proxyStorage(storage: DurableObjectStorage, context: TaskContext): DurableObjectStorage {

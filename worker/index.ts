@@ -33,10 +33,9 @@ class TestDO implements TM_DurableObject {
   async processFetch(request: Request): Promise<Response> {
     const pathname = new URL(request.url).pathname
     if (pathname === '/status') {
-      const alarm = await this.env.TASK_MANAGER.getActualAlarm()
       const list = await this.storage.list()
       const db = [...list.entries()]
-      const obj = { currentTime: Date.now(), alarm, db }
+      const obj = { currentTime: Date.now(), db }
       return new Response(JSON.stringify(obj, null, 2), { headers: { 'content-type': 'application/json' } })
     } else if (pathname === '/alarm') {
       const time = Date.now() + 1000 * 60
