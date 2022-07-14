@@ -1,4 +1,4 @@
-import { Task, TaskManager, TM_DurableObject, withTaskManager } from '../src'
+import { Task, TaskManager, TM_DurableObject, withTaskManager } from '../../src'
 
 export interface Env {
   TEST_DO: DurableObjectNamespace

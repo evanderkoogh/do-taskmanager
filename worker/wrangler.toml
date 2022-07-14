@@ -1,7 +1,6 @@
 name = "do-taskmanager2"
-main = "worker/index.ts"
+main = "src/index.ts"
 compatibility_date = "2022-06-07"
-compatibility_flags = ["durable_object_alarms"]
 
 [durable_objects]
 bindings = [
