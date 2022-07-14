@@ -1,4 +1,4 @@
-import { PointInTime, TM_DurableObject, TM_DO_class, TM_Env, Task, TaskManager, taskId } from './types'
+import { PointInTime, TM_DurableObject, TM_DO_class, TM_Env, Task, TaskManager, taskId, SingleTask, RecurringTask } from './types'
 import { TaskContext } from './context'
 
 export class TaskManagerImpl implements TaskManager {
@@ -105,4 +105,4 @@ export function withTaskManager<T extends TM_Env>(do_class: TM_DO_class<T>): TM_
   return proxy
 }
 
-export type { Task, TaskManager, TM_DurableObject }
+export type { PointInTime, SingleTask, Task, taskId, TaskManager, TM_DurableObject, RecurringTask }
