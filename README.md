@@ -34,18 +34,18 @@ const DO = withTaskManager(MyDO)
 export { DO }
 ```
 
-The scheduling methods on `TaskManager` are listed below. In all instances `context` is any Javascript object/array/primitive, that you want
+The scheduling methods on `TaskManager` are listed below. In all instances `context` is any Javascript object/array/primitive supported by the [structured clone algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm), that you want
 to include in your task when processTask is called.
 
-* `scheduleTaskAt(time: PointInTime, context: any)` where `time` is the time in either ms since the epoch or a JS Date object.
-* `scheduleTaskIn(ms: number, context: any)` where `ms` is the amount of ms for now the task should be scheduled.
-* `scheduleEvery(ms: number, context: any)` where `ms` is the interval in milliseconds that the task should be scheduled.
-* `cancelTask(taskId: taskId)` where taskId is the id that is returned by any of the scheduling functions.
+* `scheduleTaskAt(time: PointInTime, context: any): Promise<taskId>` where `time` is the time in either ms since the epoch or a JS Date object.
+* `scheduleTaskIn(ms: number, context: any): Promise<taskId>` where `ms` is the amount of ms for now the task should be scheduled.
+* `scheduleEvery(ms: number, context: any): Promise<taskId>` where `ms` is the interval in milliseconds that the task should be scheduled.
+* `cancelTask(taskId: taskId): Promise<void>` where taskId is the id that is returned by any of the scheduling functions.
 
-In practice the exact timing that your functionw will be called will depend on many factors and may not be as precise, especially for times within 30 seconds from the time of scheduling.
+In practice the exact timing that your function will be called will depend on many factors and may not be as precise, especially for times within 30 seconds from the time of scheduling.
 
 Please note that if your `processTask` throws an exception, it will retry once a minute until it succeeds. If you want to have a finite number of delivery attempts, you can check the `task.attempts` to see how many times this particular task has been attempted to be delivered before.
 
 TaskManager uses the same durable storage that your durable object uses, with the `$$_tasks` prefix. Which means that if you delete those records either directly, or through a `deleteAll`, it will also delete your tasks.
 
-Manually setting your own alarms should work as normal. TaskManager will intercept those calls and schedule them like a task, except the regular `alarm` method will be called instead of the `processTask` method. But it is recommended to only use Tasks.
+Manually setting your own alarms should work as normal. TaskManager will intercept those calls and schedule them like a task, except the regular `alarm` method will be called instead of the `processTask` method. But it is recommended to only use Tasks. Note that calling `setAlarm` will still override a previous alarm scheduled with `setAlarm`.
