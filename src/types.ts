@@ -31,7 +31,6 @@ export type ProcessingError = { error: any; task: AllTasks }
 
 export interface TaskProcessor {
   processTask(task: Task): Promise<void>
-  alarm(): Promise<void>
 }
 
 export type TM_DurableObject = DurableObject & TaskProcessor
