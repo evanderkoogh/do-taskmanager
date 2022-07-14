@@ -9,6 +9,5 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc"
-  },
-  "private": true
+  }
 }
