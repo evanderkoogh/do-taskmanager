@@ -79,7 +79,7 @@ export class TaskContext {
     console.log('Processing Alarm')
     try {
       if (alarm.scheduledAt && alarm.scheduledAt <= Date.now()) {
-        return await targetDO.alarm()
+        return await targetDO.alarm!()
       }
     } catch (error) {
       return { error, task: alarm }
