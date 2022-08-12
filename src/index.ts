@@ -1,4 +1,14 @@
-import { PointInTime, TM_DurableObject, TM_DO_class, TM_Env, Task, TaskManager, taskId, SingleTask, RecurringTask } from './types'
+import {
+  PointInTime,
+  TM_DurableObject,
+  TM_DO_class,
+  TM_Env,
+  Task,
+  TaskManager,
+  taskId,
+  SingleTask,
+  RecurringTask,
+} from './types'
 import { TaskContext } from './context'
 
 export class TaskManagerImpl implements TaskManager {
@@ -91,18 +101,31 @@ function proxyDO(targetDO: TM_DurableObject, context: TaskContext): TM_DurableOb
   return proxy
 }
 
+const TM_PROP = Symbol('hasTM')
+
 export function withTaskManager<T extends TM_Env>(do_class: TM_DO_class<T>): TM_DO_class<T> {
-  const proxy = new Proxy(do_class, {
-    construct: (target, [state, env, ...rest]) => {
-      const context = new TaskContext(state)
-      env.TASK_MANAGER = new TaskManagerImpl(context)
-      const proxiedState = proxyState(state, context)
-      const obj = new target(proxiedState, env, ...rest)
-      const proxiedDO = proxyDO(obj, context)
-      return proxiedDO
-    },
-  })
-  return proxy
+  if ((do_class as any)[TM_PROP]) {
+    return do_class
+  } else {
+    const proxy = new Proxy(do_class, {
+      construct: (target, [state, env, ...rest]) => {
+        const context = new TaskContext(state)
+        env.TASK_MANAGER = new TaskManagerImpl(context)
+        const proxiedState = proxyState(state, context)
+        const obj = new target(proxiedState, env, ...rest)
+        const proxiedDO = proxyDO(obj, context)
+        return proxiedDO
+      },
+      get: (target, prop) => {
+        if (prop === TM_PROP) {
+          return true
+        } else {
+          return (target as any)[prop]
+        }
+      },
+    })
+    return proxy
+  }
 }
 
 export type { PointInTime, SingleTask, Task, taskId, TaskManager, TM_DurableObject, RecurringTask }

@@ -69,6 +69,6 @@ class TestDO implements TM_DurableObject {
   }
 }
 
-const Test_DO = withTaskManager(TestDO)
+const Test_DO = withTaskManager(withTaskManager(TestDO))
 
 export { Test_DO }
