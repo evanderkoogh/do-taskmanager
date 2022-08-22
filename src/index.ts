@@ -83,16 +83,16 @@ function proxyState(state: DurableObjectState, context: TaskContext): DurableObj
 
 function proxyDO(targetDO: TM_DurableObject, context: TaskContext): TM_DurableObject {
   const proxy = new Proxy(targetDO, {
-    get: (_target, prop, _receiver) => {
+    get: (target, prop, _receiver) => {
       if (prop === 'alarm') {
         return async () => {
-          await context.alarm(targetDO)
+          await context.alarm(target)
         }
       } else {
         //@ts-ignore
-        const value = targetDO[prop]
+        const value = target[prop]
         if (typeof value === 'function') {
-          value.bind(targetDO)
+          value.bind(target)
         }
         return value
       }
