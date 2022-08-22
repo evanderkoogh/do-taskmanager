@@ -42,7 +42,7 @@ function proxyStorage(storage: DurableObjectStorage, context: TaskContext): Dura
         })
       } else if (prop === 'getAlarm') {
         return new Proxy(getTarget.getAlarm, {
-          apply: (_target, _thisArg, _argArray): Promise<number | null> => {
+          apply: (_target, _thisArg, _argArray): Promise<number | undefined> => {
             return context.getAlarm()
           },
         })

@@ -10,5 +10,8 @@
   "scripts": {
     "prepublishOnly": "tsc",
     "build": "tsc"
+  },
+  "dependencies": {
+    "ulid": "^2.3.0"
   }
 }

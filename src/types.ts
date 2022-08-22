@@ -24,7 +24,6 @@ export interface RecurringTask extends TaskBase {
 
 export interface AlarmTask extends TaskBase {
   type: 'ALARM'
-  id: 'alarm'
 }
 
 export type ProcessingError = { error: any; task: AllTasks }

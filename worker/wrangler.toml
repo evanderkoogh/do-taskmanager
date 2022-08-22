@@ -1,6 +1,7 @@
 name = "do-taskmanager2"
 main = "src/index.ts"
 compatibility_date = "2022-06-07"
+node_compat=true
 
 [durable_objects]
 bindings = [
