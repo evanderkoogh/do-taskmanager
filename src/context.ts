@@ -8,6 +8,18 @@ function getTime(time: PointInTime): number {
   return typeof time === 'number' ? time : time.getTime()
 }
 
+function formatError(err: any): string {
+  if (err.toString()) {
+    if (err.stack) {
+      return `${err.toString()}\n${err.stack}`
+    } else {
+      return err.toString()
+    }
+  } else {
+    return String(err)
+  }
+}
+
 export class TaskContext {
   private readonly storage: DurableObjectStorage
   private monoUlid = ulidFactory()
@@ -74,7 +86,7 @@ export class TaskContext {
     try {
       return await targetDO.processTask(task)
     } catch (err: any) {
-      const error = err.toString ? err.toString() : err
+      const error = formatError(err)
       return { error, task }
     }
   }
