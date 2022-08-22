@@ -12,6 +12,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "serialize-error": "^11.0.0",
     "ulid-workers": "^2.0.0"
   }
 }

@@ -1,23 +1,12 @@
 import { AlarmTask, AllTasks, PointInTime, ProcessingError, taskId, TM_DurableObject } from './types'
 
 import { decodeTime, ulidFactory } from 'ulid-workers'
+import { serializeError } from 'serialize-error'
 
 const ulid = ulidFactory({ monotonic: false })
 
 function getTime(time: PointInTime): number {
   return typeof time === 'number' ? time : time.getTime()
-}
-
-function formatError(err: any): string {
-  if (err.toString()) {
-    if (err.stack) {
-      return `${err.toString()}\n${err.stack}`
-    } else {
-      return err.toString()
-    }
-  } else {
-    return String(err)
-  }
 }
 
 export class TaskContext {
@@ -85,9 +74,8 @@ export class TaskContext {
     }
     try {
       return await targetDO.processTask(task)
-    } catch (err: any) {
-      const error = formatError(err)
-      return { error, task }
+    } catch (error) {
+      return { error: serializeError(error), task }
     }
   }
 
