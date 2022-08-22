@@ -88,6 +88,8 @@ function proxyDO(targetDO: TM_DurableObject, context: TaskContext): TM_DurableOb
         return async () => {
           await context.alarm(receiver)
         }
+      } else if (prop === '__task_context') {
+        return context
       } else {
         //@ts-ignore
         const value = target[prop]
