@@ -12,6 +12,6 @@
     "build": "tsc"
   },
   "dependencies": {
-    "ulid": "^2.3.0"
+    "ulid-workers": "^2.0.0"
   }
 }

@@ -1,12 +1,8 @@
 import { AlarmTask, AllTasks, PointInTime, ProcessingError, taskId, TM_DurableObject } from './types'
 
-import { decodeTime, encodeTime, factory } from 'ulid'
+import { decodeTime, ulidFactory } from 'ulid-workers'
 
-const ulid = factory(() => {
-  const buffer = new Uint8Array(1)
-  crypto.getRandomValues(buffer)
-  return buffer[0] / 0xff
-})
+const ulid = ulidFactory({ monotonic: false })
 
 function getTime(time: PointInTime): number {
   return typeof time === 'number' ? time : time.getTime()
@@ -14,6 +10,7 @@ function getTime(time: PointInTime): number {
 
 export class TaskContext {
   private readonly storage: DurableObjectStorage
+  private monoUlid = ulidFactory()
   constructor(state: DurableObjectState) {
     this.storage = state.storage
   }
@@ -30,7 +27,7 @@ export class TaskContext {
   private async scheduleTask(time: PointInTime, task: Partial<AllTasks>, setAlarm: boolean = true): Promise<taskId> {
     const epoch = getTime(time)
     task.scheduledAt = epoch
-    task.id = ulid(epoch)
+    task.id = this.monoUlid(epoch)
     await this.storage.put(`$$_tasks::${task.id}`, task)
     if (setAlarm) {
       await this.setNextAlarm()
@@ -39,17 +36,17 @@ export class TaskContext {
   }
 
   async scheduleTaskAt(time: PointInTime, context: any): Promise<taskId> {
-    return this.scheduleTask(time, { id: ulid(), attempt: 0, type: 'SINGLE', context })
+    return this.scheduleTask(time, { attempt: 0, type: 'SINGLE', context })
   }
 
   async scheduleTaskIn(sec: number, context: any): Promise<taskId> {
     const time = Date.now() + sec * 1000
-    return this.scheduleTask(time, { id: ulid(), attempt: 0, type: 'SINGLE', context })
+    return this.scheduleTask(time, { attempt: 0, type: 'SINGLE', context })
   }
 
   async scheduleTaskEvery(sec: number, context: any): Promise<taskId> {
     const time = Date.now() + sec * 1000
-    return this.scheduleTask(time, { id: ulid(), attempt: 0, type: 'RECURRING', interval: sec, context })
+    return this.scheduleTask(time, { attempt: 0, type: 'RECURRING', interval: sec, context })
   }
 
   async cancelTask(id: taskId): Promise<void> {
@@ -59,7 +56,7 @@ export class TaskContext {
   async setAlarm(time: PointInTime): Promise<void> {
     const epoch = getTime(time)
     this.storage.put('$$_tasks_alarm', epoch)
-    await this.scheduleTask(time, { id: ulid(), type: 'ALARM', attempt: 0, context: undefined })
+    await this.scheduleTask(time, { type: 'ALARM', attempt: 0, context: undefined })
   }
 
   async getAlarm(): Promise<number | undefined> {
@@ -76,7 +73,8 @@ export class TaskContext {
     }
     try {
       return await targetDO.processTask(task)
-    } catch (error) {
+    } catch (err: any) {
+      const error = err.toString ? err.toString() : err
       return { error, task }
     }
   }
@@ -94,7 +92,7 @@ export class TaskContext {
   }
 
   async alarm(targetDO: TM_DurableObject): Promise<void> {
-    const encodedNow = encodeTime(Date.now(), 10)
+    const encodedNow = ulid()
     const taskList = await this.storage.list<AllTasks>({
       prefix: '$$_tasks::',
       end: `$$_tasks::${encodedNow}}`,

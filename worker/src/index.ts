@@ -25,6 +25,10 @@ class TestDO implements TM_DurableObject {
   }
   async processTask(task: Task): Promise<void> {
     console.log('Processing Task!')
+    if (task.context === 'schedule-time1' && task.attempt < 2) {
+      console.log('Failing task for the first time')
+      throw new Error('Not this time!')
+    }
     this.storage.put(`processed::receivedAt::${Date.now()}::${task.id}}`, task)
   }
   async alarm(): Promise<void> {
