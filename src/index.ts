@@ -105,14 +105,17 @@ function proxyDO(targetDO: TM_DurableObject, context: TaskContext): TM_DurableOb
 
 const TM_PROP = Symbol('hasTM')
 
-export function withTaskManager<T extends TM_Env>(do_class: TM_DO_class<T>): TM_DO_class<T> {
+export function withTaskManager<T extends TM_Env<U>, U extends string = 'TASK_MANAGER'>(
+  do_class: TM_DO_class<T>,
+  binding_name?: U,
+): TM_DO_class<T> {
   if ((do_class as any)[TM_PROP]) {
     return do_class
   } else {
     const proxy = new Proxy(do_class, {
       construct: (target, [state, env, ...rest]) => {
         const context = new TaskContext(state)
-        env.TASK_MANAGER = new TaskManagerImpl(context)
+        env[binding_name] = new TaskManagerImpl(context)
         const proxiedState = proxyState(state, context)
         const obj = new target(proxiedState, env, ...rest)
         const proxiedDO = proxyDO(obj, context)

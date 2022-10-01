@@ -34,11 +34,11 @@ export interface TaskProcessor {
 
 export type TM_DurableObject = DurableObject & TaskProcessor
 
-export type TM_Env = {
-  TASK_MANAGER: TaskManager
+export type TM_Env<K extends string = 'TASK_MANAGER'> = {
+  [key in K]: TaskManager
 }
 
-export type TM_DO_class<T extends TM_Env> = {
+export type TM_DO_class<T extends TM_Env<never>> = {
   new (state: DurableObjectState, env: T, ...args: any[]): TM_DurableObject
 }
 
