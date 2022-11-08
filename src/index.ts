@@ -8,22 +8,23 @@ import {
   taskId,
   SingleTask,
   RecurringTask,
+  TaskBase,
 } from './types'
 import { TaskContext } from './context'
 
 export class TaskManagerImpl implements TaskManager {
   constructor(private taskContext: TaskContext) {}
 
-  async scheduleTaskAt(time: PointInTime, context: any): Promise<taskId> {
-    return this.taskContext.scheduleTaskAt(time, context)
+  async scheduleTaskAt(time: PointInTime, context: any, options?: Pick<TaskBase, 'retryInterval'>): Promise<taskId> {
+    return this.taskContext.scheduleTaskAt(time, context, options)
   }
 
-  async scheduleTaskIn(ms: number, context: any): Promise<taskId> {
-    return this.taskContext.scheduleTaskIn(ms, context)
+  async scheduleTaskIn(ms: number, context: any, options?: Pick<TaskBase, 'retryInterval'>): Promise<taskId> {
+    return this.taskContext.scheduleTaskIn(ms, context, options)
   }
 
-  async scheduleTaskEvery(ms: number, context: any): Promise<taskId> {
-    return this.taskContext.scheduleTaskEvery(ms, context)
+  async scheduleTaskEvery(ms: number, context: any, options?: Pick<TaskBase, 'retryInterval'>): Promise<taskId> {
+    return this.taskContext.scheduleTaskEvery(ms, context, options)
   }
 
   async cancelTask(id: taskId): Promise<void> {

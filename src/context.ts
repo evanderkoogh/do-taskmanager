@@ -1,4 +1,4 @@
-import { AlarmTask, AllTasks, PointInTime, ProcessingError, taskId, TM_DurableObject } from './types'
+import { AlarmTask, AllTasks, PointInTime, ProcessingError, TaskBase, taskId, TM_DurableObject } from './types'
 
 import { decodeTime, ulidFactory } from 'ulid-workers'
 import { serializeError } from 'serialize-error'
@@ -36,18 +36,24 @@ export class TaskContext {
     return task.id
   }
 
-  async scheduleTaskAt(time: PointInTime, context: any): Promise<taskId> {
-    return this.scheduleTask(time, { attempt: 0, type: 'SINGLE', context })
+  async scheduleTaskAt(time: PointInTime, context: any, options?: Pick<TaskBase, 'retryInterval'>): Promise<taskId> {
+    return this.scheduleTask(time, { attempt: 0, type: 'SINGLE', context, retryInterval: options?.retryInterval })
   }
 
-  async scheduleTaskIn(sec: number, context: any): Promise<taskId> {
+  async scheduleTaskIn(sec: number, context: any, options?: Pick<TaskBase, 'retryInterval'>): Promise<taskId> {
     const time = Date.now() + sec * 1000
-    return this.scheduleTask(time, { attempt: 0, type: 'SINGLE', context })
+    return this.scheduleTask(time, { attempt: 0, type: 'SINGLE', context, retryInterval: options?.retryInterval })
   }
 
-  async scheduleTaskEvery(sec: number, context: any): Promise<taskId> {
+  async scheduleTaskEvery(sec: number, context: any, options?: Pick<TaskBase, 'retryInterval'>): Promise<taskId> {
     const time = Date.now() + sec * 1000
-    return this.scheduleTask(time, { attempt: 0, type: 'RECURRING', interval: sec, context })
+    return this.scheduleTask(time, {
+      attempt: 0,
+      type: 'RECURRING',
+      interval: sec,
+      context,
+      retryInterval: options?.retryInterval,
+    })
   }
 
   async cancelTask(id: taskId): Promise<void> {
@@ -105,7 +111,7 @@ export class TaskContext {
         if (error) {
           //retry in a minute
           task.previousError = error.error
-          await this.scheduleTask(Date.now() + 60 * 1000, task, false)
+          await this.scheduleTask(Date.now() + (task.retryInterval || 60 * 1000), task, false)
         } else if (task.type === 'RECURRING') {
           task.attempt = 0
           task.previousError = undefined
