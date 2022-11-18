@@ -75,7 +75,8 @@ function proxyState(state: DurableObjectState, context: TaskContext): DurableObj
         return proxyStorage(state.storage, context)
       } else {
         //@ts-ignore
-        return state[prop]
+        const value = state[prop];
+        return typeof value === 'function' ? value.bind(state) : value;
       }
     },
   })
