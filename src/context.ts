@@ -42,7 +42,7 @@ export class TaskContext {
 
   async scheduleTaskIn(ms: number, context: any, options?: Pick<TaskBase, 'retryInterval'>): Promise<taskId> {
     const time = Date.now() + ms
-    return this.scheduleTask(time, { attempt: 0, type: 'SINGLE', context })
+    return this.scheduleTask(time, { attempt: 0, type: 'SINGLE', context, retryInterval: options?.retryInterval })
   }
 
   async scheduleTaskEvery(ms: number, context: any, options?: Pick<TaskBase, 'retryInterval'>): Promise<taskId> {
