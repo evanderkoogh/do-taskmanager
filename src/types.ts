@@ -10,6 +10,7 @@ export interface TaskBase {
   context: any
   attempt: number
   scheduledAt?: number
+  retryInterval?: number
   previousError?: any
 }
 
@@ -44,8 +45,8 @@ export type TM_DO_class<T extends TM_Env> = {
 }
 
 export interface TaskManager {
-  scheduleTaskAt(time: PointInTime, context: any): Promise<taskId>
-  scheduleTaskIn(ms: number, context: any): Promise<taskId>
-  scheduleTaskEvery(ms: number, context: any): Promise<taskId>
+  scheduleTaskAt(time: PointInTime, context: any, options?: Pick<TaskBase, 'retryInterval'>): Promise<taskId>
+  scheduleTaskIn(ms: number, context: any, options?: Pick<TaskBase, 'retryInterval'>): Promise<taskId>
+  scheduleTaskEvery(ms: number, context: any, options?: Pick<TaskBase, 'retryInterval'>): Promise<taskId>
   cancelTask(taskId: taskId): Promise<void>
 }
