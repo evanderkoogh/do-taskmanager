@@ -1,5 +1,8 @@
 # do-taskmanager
 
+UPDATE: Because of an inconsistency between the documentation, implementation and example in the time parameter for `scheduleTaskIn` and `scheduleTaskEvery` right after we release version `1.0.0`, we are about to release `2.0.0` because this is potentially a breaking change. No other breaking changes are expected with some minor bugfixes and some small features.
+The current version is `2.0.0-rc0`
+
 A TaskManager for Durable Objects, simplifying the use of Alarms.
 
 _WARNING_: This project code is currently in beta. Please do not use it in production for anything serious.
