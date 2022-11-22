@@ -86,11 +86,10 @@ export class TaskContext {
   }
 
   private async processAlarm(targetDO: TM_DurableObject, alarm: AlarmTask): Promise<ProcessingError | void> {
-    console.log('Processing Alarm')
     try {
-      if (alarm.scheduledAt && alarm.scheduledAt <= Date.now()) {
+      const epoch = await this.storage.get<number>('$$_tasks_alarm')
+      if (epoch && epoch <= Date.now()) {
         await targetDO.alarm!()
-        await this.storage.get<number>('$$_tasks_alarm')
       }
     } catch (error) {
       return { error, task: alarm }
