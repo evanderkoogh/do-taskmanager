@@ -48,14 +48,14 @@ class TestDO implements TM_DurableObject {
       this.storage.setAlarm(time)
       return new Response(`alarm scheduled for ${time}`)
     } else if (pathname === '/schedule') {
-      const time1 = Date.now() + 1000 * 30
-      const time2 = Date.now() + 1000 * 45
-      const time3 = Date.now() + 1000 * 120
+      const time1 = Date.now() + 1000 * 3
+      const time2 = Date.now() + 1000 * 5
+      const time3 = Date.now() + 1000 * 30
       this.env.TASK_MANAGER.scheduleTaskAt(time1, 'schedule-time1')
       this.env.TASK_MANAGER.scheduleTaskAt(time2, 'schedule-time2')
       const taskId3 = await this.env.TASK_MANAGER.scheduleTaskAt(time3, 'schedule-time3')
-      this.env.TASK_MANAGER.scheduleTaskEvery(60, 'recurring')
-      this.env.TASK_MANAGER.scheduleTaskIn(75, 'schedule-in')
+      this.env.TASK_MANAGER.scheduleTaskEvery(6000, 'recurring')
+      this.env.TASK_MANAGER.scheduleTaskIn(7500, 'schedule-in')
       this.env.TASK_MANAGER.cancelTask(taskId3)
       return new Response('Scheduled!')
     } else if (pathname === '/delete') {
