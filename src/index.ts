@@ -76,8 +76,8 @@ function proxyState(state: DurableObjectState, context: TaskContext): DurableObj
         return proxyStorage(state.storage, context)
       } else {
         //@ts-ignore
-        const value = state[prop];
-        return typeof value === 'function' ? value.bind(state) : value;
+        const value = state[prop]
+        return typeof value === 'function' ? value.bind(state) : value
       }
     },
   })
@@ -113,6 +113,7 @@ export function withTaskManager<T extends TM_Env>(do_class: TM_DO_class<T>): TM_
   } else {
     const proxy = new Proxy(do_class, {
       construct: (target, [state, env, ...rest]) => {
+        env = Object.assign({}, env)
         const context = new TaskContext(state)
         env.TASK_MANAGER = new TaskManagerImpl(context)
         const proxiedState = proxyState(state, context)

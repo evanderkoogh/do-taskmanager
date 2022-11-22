@@ -40,14 +40,20 @@ export class TaskContext {
     return this.scheduleTask(time, { attempt: 0, type: 'SINGLE', context, retryInterval: options?.retryInterval })
   }
 
-  async scheduleTaskIn(ms: number, context: any): Promise<taskId> {
+  async scheduleTaskIn(ms: number, context: any, options?: Pick<TaskBase, 'retryInterval'>): Promise<taskId> {
     const time = Date.now() + ms
     return this.scheduleTask(time, { attempt: 0, type: 'SINGLE', context })
   }
 
-  async scheduleTaskEvery(ms: number, context: any): Promise<taskId> {
+  async scheduleTaskEvery(ms: number, context: any, options?: Pick<TaskBase, 'retryInterval'>): Promise<taskId> {
     const time = Date.now() + ms
-    return this.scheduleTask(time, { attempt: 0, type: 'RECURRING', interval: ms, context, retryInterval: options?.retryInterval, })
+    return this.scheduleTask(time, {
+      attempt: 0,
+      type: 'RECURRING',
+      interval: ms,
+      context,
+      retryInterval: options?.retryInterval,
+    })
   }
 
   async cancelTask(id: taskId): Promise<void> {
