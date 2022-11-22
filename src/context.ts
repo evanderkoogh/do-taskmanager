@@ -40,20 +40,14 @@ export class TaskContext {
     return this.scheduleTask(time, { attempt: 0, type: 'SINGLE', context, retryInterval: options?.retryInterval })
   }
 
-  async scheduleTaskIn(sec: number, context: any, options?: Pick<TaskBase, 'retryInterval'>): Promise<taskId> {
-    const time = Date.now() + sec * 1000
-    return this.scheduleTask(time, { attempt: 0, type: 'SINGLE', context, retryInterval: options?.retryInterval })
+  async scheduleTaskIn(ms: number, context: any): Promise<taskId> {
+    const time = Date.now() + ms
+    return this.scheduleTask(time, { attempt: 0, type: 'SINGLE', context })
   }
 
-  async scheduleTaskEvery(sec: number, context: any, options?: Pick<TaskBase, 'retryInterval'>): Promise<taskId> {
-    const time = Date.now() + sec * 1000
-    return this.scheduleTask(time, {
-      attempt: 0,
-      type: 'RECURRING',
-      interval: sec,
-      context,
-      retryInterval: options?.retryInterval,
-    })
+  async scheduleTaskEvery(ms: number, context: any): Promise<taskId> {
+    const time = Date.now() + ms
+    return this.scheduleTask(time, { attempt: 0, type: 'RECURRING', interval: ms, context, retryInterval: options?.retryInterval, })
   }
 
   async cancelTask(id: taskId): Promise<void> {
@@ -115,7 +109,7 @@ export class TaskContext {
         } else if (task.type === 'RECURRING') {
           task.attempt = 0
           task.previousError = undefined
-          await this.scheduleTask(Date.now() + task.interval * 1000, task, false)
+          await this.scheduleTask(Date.now() + task.interval, task, false)
         }
       }
       await this.storage.delete(key)

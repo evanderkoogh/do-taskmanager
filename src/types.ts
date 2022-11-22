@@ -20,6 +20,7 @@ export interface SingleTask extends TaskBase {
 
 export interface RecurringTask extends TaskBase {
   type: 'RECURRING'
+  // interval in ms
   interval: number
 }
 
