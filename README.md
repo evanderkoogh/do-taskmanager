@@ -41,9 +41,9 @@ The scheduling methods on `TaskManager` are listed below. In all instances `cont
 to include in your task when processTask is called.
 
 - `scheduleTaskAt(time: PointInTime, context: any): Promise<taskId>` where `time` is the time in either ms since the epoch or a JS Date object.
-- `scheduleTaskIn(ms: number, context: any): Promise<taskId>` where `ms` is the amount of ms for now the task should be scheduled.
+- `scheduleTaskIn(ms: number, context: any): Promise<taskId>` where `ms` is the number of ms from now that the task should be scheduled.
 - `scheduleEvery(ms: number, context: any): Promise<taskId>` where `ms` is the interval in milliseconds that the task should be scheduled.
-- `cancelTask(taskId: taskId): Promise<void>` where taskId is the id that is returned by any of the scheduling functions.
+- `cancelTask(taskId: taskId): Promise<void>` where `taskId` is the id that is returned by any of the scheduling functions.
 
 In practice the exact timing that your function will be called will depend on many factors and may not be as precise, especially for times within 30 seconds from the time of scheduling.
 
