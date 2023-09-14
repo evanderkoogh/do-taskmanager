@@ -1,0 +1,49 @@
+lockfileVersion: '6.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+dependencies:
+  serialize-error:
+    specifier: ^11.0.0
+    version: 11.0.0
+  ulid-workers:
+    specifier: ^2.0.0
+    version: 2.0.0
+
+devDependencies:
+  '@cloudflare/workers-types':
+    specifier: ^3.11.0
+    version: 3.18.0
+  typescript:
+    specifier: ^4.7.3
+    version: 4.9.3
+
+packages:
+
+  /@cloudflare/workers-types@3.18.0:
+    resolution: {integrity: sha512-ehKOJVLMeR+tZkYhWEaLYQxl0TaIZu/kE86HF3/RidR8Xv5LuQxpbh+XXAoKVqsaphWLhIgBhgnlN5HGdheXSQ==}
+    dev: true
+
+  /serialize-error@11.0.0:
+    resolution: {integrity: sha512-YKrURWDqcT3VGX/s/pCwaWtpfJEEaEw5Y4gAnQDku92b/HjVj4r4UhA5QrMVMFotymK2wIWs5xthny5SMFu7Vw==}
+    engines: {node: '>=14.16'}
+    dependencies:
+      type-fest: 2.19.0
+    dev: false
+
+  /type-fest@2.19.0:
+    resolution: {integrity: sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==}
+    engines: {node: '>=12.20'}
+    dev: false
+
+  /typescript@4.9.3:
+    resolution: {integrity: sha512-CIfGzTelbKNEnLpLdGFgdyKhG23CKdKgQPOBc+OUNrkJ2vr+KSzsSV5kq5iWhEQbok+quxgGzrAtGWCyU7tHnA==}
+    engines: {node: '>=4.2.0'}
+    hasBin: true
+    dev: true
+
+  /ulid-workers@2.0.0:
+    resolution: {integrity: sha512-iPme4QPFVeH4b5wq3zYBpLC4qwrW9FhfGN+EaAZw+NNiMz62vl+nioir5g/ps7KknRPOhVjTM3GDPFcisHZTxA==}
+    dev: false
