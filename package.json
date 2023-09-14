@@ -15,5 +15,6 @@
   "dependencies": {
     "serialize-error": "^11.0.2",
     "ulid-workers": "^2.1.0"
-  }
+  },
+  "license": "BSD-3-Clause"
 }
