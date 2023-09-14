@@ -2,8 +2,8 @@
   "name": "do-taskmanager",
   "version": "2.0.0-rc.0",
   "devDependencies": {
-    "@cloudflare/workers-types": "^3.11.0",
-    "typescript": "^4.7.3"
+    "@cloudflare/workers-types": "^4.20230904.0",
+    "typescript": "^5.2.2"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -13,7 +13,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "serialize-error": "^11.0.0",
-    "ulid-workers": "^2.0.0"
+    "serialize-error": "^11.0.2",
+    "ulid-workers": "^2.1.0"
   }
 }

@@ -6,28 +6,28 @@ settings:
 
 dependencies:
   serialize-error:
-    specifier: ^11.0.0
-    version: 11.0.0
+    specifier: ^11.0.2
+    version: 11.0.2
   ulid-workers:
-    specifier: ^2.0.0
-    version: 2.0.0
+    specifier: ^2.1.0
+    version: 2.1.0
 
 devDependencies:
   '@cloudflare/workers-types':
-    specifier: ^3.11.0
-    version: 3.18.0
+    specifier: ^4.20230904.0
+    version: 4.20230904.0
   typescript:
-    specifier: ^4.7.3
-    version: 4.9.3
+    specifier: ^5.2.2
+    version: 5.2.2
 
 packages:
 
-  /@cloudflare/workers-types@3.18.0:
-    resolution: {integrity: sha512-ehKOJVLMeR+tZkYhWEaLYQxl0TaIZu/kE86HF3/RidR8Xv5LuQxpbh+XXAoKVqsaphWLhIgBhgnlN5HGdheXSQ==}
+  /@cloudflare/workers-types@4.20230904.0:
+    resolution: {integrity: sha512-IX4oJCe14ctblSPZBlW64BVZ9nYLUo6sD2I5gu3hX0ywByYWm1OuoKm9Xb/Zpbj8Ph18Z7Ryii6u2/ocnncXdA==}
     dev: true
 
-  /serialize-error@11.0.0:
-    resolution: {integrity: sha512-YKrURWDqcT3VGX/s/pCwaWtpfJEEaEw5Y4gAnQDku92b/HjVj4r4UhA5QrMVMFotymK2wIWs5xthny5SMFu7Vw==}
+  /serialize-error@11.0.2:
+    resolution: {integrity: sha512-o43i0jLcA0LXA5Uu+gI1Vj+lF66KR9IAcy0ThbGq1bAMPN+k5IgSHsulfnqf/ddKAz6dWf+k8PD5hAr9oCSHEQ==}
     engines: {node: '>=14.16'}
     dependencies:
       type-fest: 2.19.0
@@ -38,12 +38,12 @@ packages:
     engines: {node: '>=12.20'}
     dev: false
 
-  /typescript@4.9.3:
-    resolution: {integrity: sha512-CIfGzTelbKNEnLpLdGFgdyKhG23CKdKgQPOBc+OUNrkJ2vr+KSzsSV5kq5iWhEQbok+quxgGzrAtGWCyU7tHnA==}
-    engines: {node: '>=4.2.0'}
+  /typescript@5.2.2:
+    resolution: {integrity: sha512-mI4WrpHsbCIcwT9cF4FZvr80QUeKvsUsUvKDoR+X/7XHQH98xYD8YHZg7ANtz2GtZt/CBq2QJ0thkGJMHfqc1w==}
+    engines: {node: '>=14.17'}
     hasBin: true
     dev: true
 
-  /ulid-workers@2.0.0:
-    resolution: {integrity: sha512-iPme4QPFVeH4b5wq3zYBpLC4qwrW9FhfGN+EaAZw+NNiMz62vl+nioir5g/ps7KknRPOhVjTM3GDPFcisHZTxA==}
+  /ulid-workers@2.1.0:
+    resolution: {integrity: sha512-D4+5fwPt5FEoGdMQtx5YwRHUZ4SDWSypraDZiXT3Y8U7T0C6h99dXhpWJQScNckoVRU+zi+BDuoBKHAffrn9vg==}
     dev: false
